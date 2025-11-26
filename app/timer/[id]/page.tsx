@@ -67,7 +67,7 @@ function TimerPageContent({ session }: { session: Session }) {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-3xl">
+      <main className="container mx-auto px-4 py-4 max-w-3xl">
         <div className="space-y-8">
           <TimerProgress
             session={session}

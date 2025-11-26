@@ -6,26 +6,24 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { getSessions, saveSession } from "@/lib/storage";
-import { useEffect, useState } from "react";
-import { Session } from "@/types/timer";
+import { use, useEffect } from "react";
 
 export default function EditSessionPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = use(params);
   const router = useRouter();
-  const [session, setSession] = useState<Session | null>(null);
+
+  const sessions = getSessions();
+  const session = sessions.find((s) => s.id === id);
 
   useEffect(() => {
-    const sessions = getSessions();
-    const found = sessions.find((s) => s.id === params.id);
-    if (found) {
-      setSession(found);
-    } else {
+    if (!session) {
       router.push("/");
     }
-  }, [params.id, router]);
+  }, [session, router]);
 
   if (!session) {
     return null;

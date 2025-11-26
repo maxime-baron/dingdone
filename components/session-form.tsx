@@ -197,23 +197,39 @@ export function SessionForm({
                 {cycle.intervals.map((interval, intervalIndex) => (
                   <Card key={interval.id} className="bg-muted/50">
                     <CardContent className="p-4 space-y-3 py-0">
-                      <div className="space-y-2">
-                        <Label
-                          htmlFor={`interval-${cycleIndex}-${intervalIndex}-name`}
-                          className="text-xs"
-                        >
-                          Nom
-                        </Label>
-                        <Input
-                          id={`interval-${cycleIndex}-${intervalIndex}-name`}
-                          value={interval.name}
-                          onChange={(e) =>
-                            updateInterval(cycleIndex, intervalIndex, {
-                              name: e.target.value,
-                            })
-                          }
-                          placeholder="Ex: Travail, Repos..."
-                        />
+                      <div className="flex gap-2">
+                        <div className="flex-1 space-y-2">
+                          <Label
+                            htmlFor={`interval-${cycleIndex}-${intervalIndex}-name`}
+                            className="text-xs"
+                          >
+                            Nom
+                          </Label>
+                          <Input
+                            id={`interval-${cycleIndex}-${intervalIndex}-name`}
+                            value={interval.name}
+                            onChange={(e) =>
+                              updateInterval(cycleIndex, intervalIndex, {
+                                name: e.target.value,
+                              })
+                            }
+                            placeholder="Ex: Travail, Repos..."
+                          />
+                        </div>
+                        {cycle.intervals.length > 1 && (
+                          <div className="flex items-end">
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon"
+                              onClick={() =>
+                                removeInterval(cycleIndex, intervalIndex)
+                              }
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
                       </div>
                       <div className="flex gap-2">
                         <div className="flex-1 space-y-2">
@@ -254,20 +270,6 @@ export function SessionForm({
                             }
                           />
                         </div>
-                        {cycle.intervals.length > 1 && (
-                          <div className="flex items-end">
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              size="icon"
-                              onClick={() =>
-                                removeInterval(cycleIndex, intervalIndex)
-                              }
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        )}
                       </div>
                     </CardContent>
                   </Card>
