@@ -14,8 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DingDone - Timer PWA",
-  description: "Application de gestion de sessions de travail avec intervalles personnalisés",
+  title: "DingDone - Chronomètres d'intervalles",
+  description:
+    "Application de chronomètre avec des sessions et des intervalles personnalisés",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
