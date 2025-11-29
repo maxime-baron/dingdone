@@ -109,7 +109,7 @@ export function SessionForm({
       cycle.intervals.forEach((interval, index) => {
         if (isNaN(interval.duration)) {
           console.debug("NaN");
-          alert(`L'intervalle ${index} n'a pas de durée`);
+          alert(`L'intervalle ${index + 1} n'a pas de durée`);
           error = true;
         }
       });
