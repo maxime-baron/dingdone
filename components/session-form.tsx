@@ -33,7 +33,7 @@ export function SessionForm({
   );
   const [cycles, setCycles] = useState<Cycle[]>(
     initialSession?.cycles || [
-      createCycle([createInterval("Travail", 1500, INTERVAL_COLORS.work)], 1),
+      createCycle([createInterval("Travail", 2, INTERVAL_COLORS.work)], 1),
     ]
   );
 
@@ -93,6 +93,7 @@ export function SessionForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    let error = false;
 
     if (!name.trim()) {
       alert("Veuillez entrer un nom pour la session");
@@ -101,6 +102,20 @@ export function SessionForm({
 
     if (cycles.length === 0) {
       alert("Veuillez ajouter au moins un cycle");
+      return;
+    }
+
+    cycles.forEach((cycle) => {
+      cycle.intervals.forEach((interval, index) => {
+        if (isNaN(interval.duration)) {
+          console.debug("NaN");
+          alert(`L'intervalle ${index} n'a pas de durée`);
+          error = true;
+        }
+      });
+    });
+
+    if (error) {
       return;
     }
 
@@ -242,11 +257,10 @@ export function SessionForm({
                           <Input
                             id={`interval-${cycleIndex}-${intervalIndex}-duration`}
                             type="number"
-                            min="1"
-                            value={interval.duration}
+                            value={interval.duration || ""}
                             onChange={(e) =>
                               updateInterval(cycleIndex, intervalIndex, {
-                                duration: parseInt(e.target.value) || 1,
+                                duration: parseInt(e.target.value) || NaN,
                               })
                             }
                           />
