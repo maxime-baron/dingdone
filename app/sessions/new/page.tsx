@@ -1,6 +1,6 @@
 "use client";
 
-import { SessionForm } from "@/components/session-form";
+import { SessionForm } from "@/components/session-form/session-form";
 import { useSessions } from "@/hooks/use-sessions";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";

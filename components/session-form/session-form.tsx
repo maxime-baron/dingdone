@@ -15,6 +15,8 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2, Save } from "lucide-react";
+import Picker from "react-mobile-picker";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 
 interface SessionFormProps {
   initialSession?: Session;
@@ -22,11 +24,29 @@ interface SessionFormProps {
   onCancel: () => void;
 }
 
+type PickerValue = { minute: number; second: number };
+type PickerState = PickerValue[][];
+
 export function SessionForm({
   initialSession,
   onSave,
   onCancel,
 }: SessionFormProps) {
+  const [picker, setPickerValue] = useState<PickerState>(
+    initialSession?.cycles.map((cycle) =>
+      cycle.intervals.map((interval) => ({
+        minute: (interval.duration / 60) | 0,
+        second: interval.duration % 60,
+      }))
+    ) || [
+      [
+        {
+          minute: 1,
+          second: 30,
+        },
+      ],
+    ]
+  );
   const [name, setName] = useState(initialSession?.name || "");
   const [playCountdownSound, setPlayCountdownSound] = useState(
     initialSession?.playCountdownSound ?? false
@@ -45,10 +65,25 @@ export function SessionForm({
         1
       ),
     ]);
+
+    setPickerValue((prev) => {
+      const next = [...prev];
+      next[cycles.length] = [
+        ...(next[cycles.length] || []),
+        { minute: 1, second: 30 },
+      ];
+      return next;
+    });
   };
 
   const removeCycle = (cycleIndex: number) => {
     setCycles(cycles.filter((_, idx) => idx !== cycleIndex));
+
+    setPickerValue((prev) => {
+      const next = [...prev];
+      next.splice(cycleIndex, 1);
+      return next;
+    });
   };
 
   const updateCycle = (cycleIndex: number, updates: Partial<Cycle>) => {
@@ -66,6 +101,16 @@ export function SessionForm({
       60,
       INTERVAL_COLORS.default
     );
+
+    setPickerValue((prev) => {
+      const next = [...prev];
+      next[cycleIndex] = [
+        ...(next[cycleIndex] || []),
+        { minute: 1, second: 30 },
+      ];
+      return next;
+    });
+
     updateCycle(cycleIndex, {
       intervals: [...cycle.intervals, newInterval],
     });
@@ -73,6 +118,15 @@ export function SessionForm({
 
   const removeInterval = (cycleIndex: number, intervalIndex: number) => {
     const cycle = cycles[cycleIndex];
+
+    setPickerValue((prev) => {
+      const next = [...prev];
+      next[cycleIndex] = next[cycleIndex].filter(
+        (_, idx) => idx !== intervalIndex
+      );
+      return next;
+    });
+
     updateCycle(cycleIndex, {
       intervals: cycle.intervals.filter((_, idx) => idx !== intervalIndex),
     });
@@ -108,7 +162,6 @@ export function SessionForm({
     cycles.forEach((cycle) => {
       cycle.intervals.forEach((interval, index) => {
         if (isNaN(interval.duration)) {
-          console.debug("NaN");
           alert(`L'intervalle ${index + 1} n'a pas de durée`);
           error = true;
         }
@@ -252,18 +305,69 @@ export function SessionForm({
                             htmlFor={`interval-${cycleIndex}-${intervalIndex}-duration`}
                             className="text-xs"
                           >
-                            Durée (s)
+                            Durée
                           </Label>
-                          <Input
-                            id={`interval-${cycleIndex}-${intervalIndex}-duration`}
-                            type="number"
-                            value={interval.duration || ""}
-                            onChange={(e) =>
-                              updateInterval(cycleIndex, intervalIndex, {
-                                duration: parseInt(e.target.value) || NaN,
-                              })
-                            }
-                          />
+                          <Popover
+                            onOpenChange={(isOpen) => {
+                              if (isOpen) {
+                                document.body.style.overflow = "hidden";
+                              } else {
+                                document.body.style.overflow = "";
+                              }
+                            }}
+                          >
+                            <PopoverTrigger asChild>
+                              <Input
+                                id={`interval-${cycleIndex}-${intervalIndex}-duration`}
+                                type="text"
+                                value={`${
+                                  picker[cycleIndex][intervalIndex].minute
+                                }:${picker[cycleIndex][
+                                  intervalIndex
+                                ].second.toLocaleString(undefined, {
+                                  minimumIntegerDigits: 2,
+                                })}`}
+                                readOnly
+                              />
+                            </PopoverTrigger>
+                            <PopoverContent className="w-56">
+                              <div className="flex">
+                                <span className="flex-1 text-center">
+                                  Minutes
+                                </span>
+                                <span className="flex-1 text-center">
+                                  Secondes
+                                </span>
+                              </div>
+                              <Picker
+                                value={picker[cycleIndex][intervalIndex]}
+                                onChange={(pickerValue) => {
+                                  setPickerValue((prev) => {
+                                    const next = [...prev];
+                                    next[cycleIndex][intervalIndex] =
+                                      pickerValue;
+                                    return next;
+                                  });
+                                  updateInterval(cycleIndex, intervalIndex, {
+                                    duration:
+                                      pickerValue.minute * 60 +
+                                      pickerValue.second,
+                                  });
+                                }}
+                                wheelMode="normal"
+                              >
+                                {["minute", "second"].map((value) => (
+                                  <Picker.Column key={value} name={value}>
+                                    {[...Array(60).keys()].map((option) => (
+                                      <Picker.Item key={option} value={option}>
+                                        {option}
+                                      </Picker.Item>
+                                    ))}
+                                  </Picker.Column>
+                                ))}
+                              </Picker>
+                            </PopoverContent>
+                          </Popover>
                         </div>
                         <div className="flex-1 space-y-2">
                           <Label
