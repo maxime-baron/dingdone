@@ -32,8 +32,8 @@ export interface TimerState {
   isRunning: boolean;
   isPaused: boolean;
   // Timestamp fields for background timer support
-  startedAt: number | null;          // Timestamp when timer started
-  pausedAt: number | null;           // Timestamp when timer was paused
-  intervalStartedAt: number | null;  // Timestamp when current interval started
-  notificationsEnabled: boolean;     // Whether notifications are granted
+  startedAt: number | null; // Timestamp when timer started
+  pausedAt: number | null; // Timestamp when timer was paused
+  intervalStartedAt: number | null; // Timestamp when current interval started
+  notificationsEnabled: boolean; // Whether notifications are granted
 }

@@ -32,7 +32,9 @@ export function formatTime(seconds: number): string {
   const secs = seconds % 60;
 
   if (hours > 0) {
-    return `${hours}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+    return `${hours}:${minutes.toString().padStart(2, "0")}:${secs
+      .toString()
+      .padStart(2, "0")}`;
   }
   return `${minutes}:${secs.toString().padStart(2, "0")}`;
 }
@@ -69,7 +71,10 @@ export function createInterval(
   };
 }
 
-export function createCycle(intervals: Interval[], repetitions: number = 1): Cycle {
+export function createCycle(
+  intervals: Interval[],
+  repetitions: number = 1
+): Cycle {
   const cycle: Cycle = {
     id: generateId(),
     intervals,
@@ -114,9 +119,10 @@ export function calculateTimeRemaining(
   if (!state.intervalStartedAt) return intervalDuration;
 
   const now = Date.now();
-  const elapsed = state.isPaused && state.pausedAt
-    ? (state.pausedAt - state.intervalStartedAt) / 1000
-    : (now - state.intervalStartedAt) / 1000;
+  const elapsed =
+    state.isPaused && state.pausedAt
+      ? (state.pausedAt - state.intervalStartedAt) / 1000
+      : (now - state.intervalStartedAt) / 1000;
 
   const remaining = Math.max(0, intervalDuration - Math.floor(elapsed));
   return remaining;
@@ -179,7 +185,7 @@ export function recoverTimerState(
         currentIntervalIndex,
         currentCycleRepetition,
         timeRemaining: currentInterval.duration - remainingSeconds,
-        intervalStartedAt: now - (remainingSeconds * 1000),
+        intervalStartedAt: now - remainingSeconds * 1000,
       };
     }
 
@@ -215,8 +221,16 @@ export function recoverTimerState(
 export function getUpcomingTransitions(
   session: Session,
   state: TimerState
-): Array<{ delay: number; type: "interval" | "cycle" | "session"; name: string }> {
-  const transitions: Array<{ delay: number; type: "interval" | "cycle" | "session"; name: string }> = [];
+): Array<{
+  delay: number;
+  type: "interval" | "cycle" | "session";
+  name: string;
+}> {
+  const transitions: Array<{
+    delay: number;
+    type: "interval" | "cycle" | "session";
+    name: string;
+  }> = [];
 
   let accumulatedTime = state.timeRemaining; // Start from current remaining time
   let cycleIndex = state.currentCycleIndex;
