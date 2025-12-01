@@ -14,9 +14,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, Save } from "lucide-react";
-import Picker from "react-mobile-picker";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Plus, Save } from "lucide-react";
+import IntervalCard from "./interval-card";
+import CycleCard from "./cycle-card";
 
 interface SessionFormProps {
   initialSession?: Session;
@@ -24,36 +24,21 @@ interface SessionFormProps {
   onCancel: () => void;
 }
 
-type PickerValue = { minute: number; second: number };
-type PickerState = PickerValue[][];
-
 export function SessionForm({
   initialSession,
   onSave,
   onCancel,
 }: SessionFormProps) {
-  const [picker, setPickerValue] = useState<PickerState>(
-    initialSession?.cycles.map((cycle) =>
-      cycle.intervals.map((interval) => ({
-        minute: (interval.duration / 60) | 0,
-        second: interval.duration % 60,
-      }))
-    ) || [
-      [
-        {
-          minute: 1,
-          second: 30,
-        },
-      ],
-    ]
-  );
   const [name, setName] = useState(initialSession?.name || "");
   const [playCountdownSound, setPlayCountdownSound] = useState(
     initialSession?.playCountdownSound ?? false
   );
   const [cycles, setCycles] = useState<Cycle[]>(
     initialSession?.cycles || [
-      createCycle([createInterval("Travail", 2, INTERVAL_COLORS.work)], 1),
+      createCycle(
+        [createInterval("Intervalle 1", 90, INTERVAL_COLORS.work)],
+        5
+      ),
     ]
   );
 
@@ -61,29 +46,14 @@ export function SessionForm({
     setCycles([
       ...cycles,
       createCycle(
-        [createInterval("Intervalle", 60, INTERVAL_COLORS.default)],
-        1
+        [createInterval("Intervalle", 90, INTERVAL_COLORS.default)],
+        5
       ),
     ]);
-
-    setPickerValue((prev) => {
-      const next = [...prev];
-      next[cycles.length] = [
-        ...(next[cycles.length] || []),
-        { minute: 1, second: 30 },
-      ];
-      return next;
-    });
   };
 
   const removeCycle = (cycleIndex: number) => {
     setCycles(cycles.filter((_, idx) => idx !== cycleIndex));
-
-    setPickerValue((prev) => {
-      const next = [...prev];
-      next.splice(cycleIndex, 1);
-      return next;
-    });
   };
 
   const updateCycle = (cycleIndex: number, updates: Partial<Cycle>) => {
@@ -98,18 +68,9 @@ export function SessionForm({
     const cycle = cycles[cycleIndex];
     const newInterval = createInterval(
       "Intervalle",
-      60,
+      90,
       INTERVAL_COLORS.default
     );
-
-    setPickerValue((prev) => {
-      const next = [...prev];
-      next[cycleIndex] = [
-        ...(next[cycleIndex] || []),
-        { minute: 1, second: 30 },
-      ];
-      return next;
-    });
 
     updateCycle(cycleIndex, {
       intervals: [...cycle.intervals, newInterval],
@@ -118,14 +79,6 @@ export function SessionForm({
 
   const removeInterval = (cycleIndex: number, intervalIndex: number) => {
     const cycle = cycles[cycleIndex];
-
-    setPickerValue((prev) => {
-      const next = [...prev];
-      next[cycleIndex] = next[cycleIndex].filter(
-        (_, idx) => idx !== intervalIndex
-      );
-      return next;
-    });
 
     updateCycle(cycleIndex, {
       intervals: cycle.intervals.filter((_, idx) => idx !== intervalIndex),
@@ -161,7 +114,7 @@ export function SessionForm({
 
     cycles.forEach((cycle) => {
       cycle.intervals.forEach((interval, index) => {
-        if (isNaN(interval.duration)) {
+        if (isNaN(interval.duration) || interval.duration === 0) {
           alert(`L'intervalle ${index + 1} n'a pas de durée`);
           error = true;
         }
@@ -191,7 +144,7 @@ export function SessionForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       <Card className="gap-3">
         <CardHeader>
-          <CardTitle>Informations de base</CardTitle>
+          <CardTitle>Session</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -224,186 +177,47 @@ export function SessionForm({
 
       <div className="space-y-2">
         {cycles.map((cycle, cycleIndex) => (
-          <Card key={cycle.id} className=" gap-3">
-            <CardHeader className="h-8">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">
-                  Cycle {cycleIndex + 1}
-                </CardTitle>
-                {cycles.length > 1 && (
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="icon-sm"
-                    onClick={() => removeCycle(cycleIndex)}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor={`cycle-${cycleIndex}-repetitions`}>
-                  Nombre de répétitions
-                </Label>
-                <Input
-                  id={`cycle-${cycleIndex}-repetitions`}
-                  type="number"
-                  min="1"
-                  value={cycle.repetitions}
-                  onChange={(e) =>
-                    updateCycle(cycleIndex, {
-                      repetitions: parseInt(e.target.value) || 1,
-                    })
-                  }
-                />
-              </div>
-
-              <div className="space-y-3">
-                <Label>Intervalles</Label>
-                {cycle.intervals.map((interval, intervalIndex) => (
-                  <Card key={interval.id} className="bg-muted/50">
-                    <CardContent className="p-4 space-y-3 py-0">
-                      <div className="flex gap-2">
-                        <div className="flex-1 space-y-2">
-                          <Label
-                            htmlFor={`interval-${cycleIndex}-${intervalIndex}-name`}
-                            className="text-xs"
-                          >
-                            Nom
-                          </Label>
-                          <Input
-                            id={`interval-${cycleIndex}-${intervalIndex}-name`}
-                            value={interval.name}
-                            onChange={(e) =>
-                              updateInterval(cycleIndex, intervalIndex, {
-                                name: e.target.value,
-                              })
-                            }
-                            placeholder="Ex: Travail, Repos..."
-                          />
-                        </div>
-                        {cycle.intervals.length > 1 && (
-                          <div className="flex items-end">
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              size="icon"
-                              onClick={() =>
-                                removeInterval(cycleIndex, intervalIndex)
-                              }
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex gap-2">
-                        <div className="flex-1 space-y-2">
-                          <Label
-                            htmlFor={`interval-${cycleIndex}-${intervalIndex}-duration`}
-                            className="text-xs"
-                          >
-                            Durée
-                          </Label>
-                          <Popover
-                            onOpenChange={(isOpen) => {
-                              if (isOpen) {
-                                document.body.style.overflow = "hidden";
-                              } else {
-                                document.body.style.overflow = "";
-                              }
-                            }}
-                          >
-                            <PopoverTrigger asChild>
-                              <Input
-                                id={`interval-${cycleIndex}-${intervalIndex}-duration`}
-                                type="text"
-                                value={`${
-                                  picker[cycleIndex][intervalIndex].minute
-                                }:${picker[cycleIndex][
-                                  intervalIndex
-                                ].second.toLocaleString(undefined, {
-                                  minimumIntegerDigits: 2,
-                                })}`}
-                                readOnly
-                              />
-                            </PopoverTrigger>
-                            <PopoverContent className="w-56">
-                              <div className="flex">
-                                <span className="flex-1 text-center">
-                                  Minutes
-                                </span>
-                                <span className="flex-1 text-center">
-                                  Secondes
-                                </span>
-                              </div>
-                              <Picker
-                                value={picker[cycleIndex][intervalIndex]}
-                                onChange={(pickerValue) => {
-                                  setPickerValue((prev) => {
-                                    const next = [...prev];
-                                    next[cycleIndex][intervalIndex] =
-                                      pickerValue;
-                                    return next;
-                                  });
-                                  updateInterval(cycleIndex, intervalIndex, {
-                                    duration:
-                                      pickerValue.minute * 60 +
-                                      pickerValue.second,
-                                  });
-                                }}
-                                wheelMode="normal"
-                              >
-                                {["minute", "second"].map((value) => (
-                                  <Picker.Column key={value} name={value}>
-                                    {[...Array(60).keys()].map((option) => (
-                                      <Picker.Item key={option} value={option}>
-                                        {option}
-                                      </Picker.Item>
-                                    ))}
-                                  </Picker.Column>
-                                ))}
-                              </Picker>
-                            </PopoverContent>
-                          </Popover>
-                        </div>
-                        <div className="flex-1 space-y-2">
-                          <Label
-                            htmlFor={`interval-${cycleIndex}-${intervalIndex}-color`}
-                            className="text-xs"
-                          >
-                            Couleur
-                          </Label>
-                          <Input
-                            id={`interval-${cycleIndex}-${intervalIndex}-color`}
-                            className="p-0 border-none"
-                            type="color"
-                            value={interval.color || INTERVAL_COLORS.default}
-                            onChange={(e) =>
-                              updateInterval(cycleIndex, intervalIndex, {
-                                color: e.target.value,
-                              })
-                            }
-                          />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => addInterval(cycleIndex)}
-                  className="w-full"
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Ajouter un intervalle
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <CycleCard
+            key={cycleIndex}
+            cycle={cycle}
+            index={cycleIndex}
+            cycleCount={cycles.length}
+            onDelete={() => removeCycle(cycleIndex)}
+            onUpdateRepetition={(repetitions) =>
+              updateCycle(cycleIndex, {
+                repetitions,
+              })
+            }
+          >
+            {cycle.intervals.map((interval, intervalIndex) => (
+              <IntervalCard
+                key={intervalIndex}
+                interval={interval}
+                cycleIndex={cycleIndex}
+                index={intervalIndex}
+                intervalCount={cycle.intervals.length}
+                onDelete={() => removeInterval(cycleIndex, intervalIndex)}
+                onUpdateName={(name) =>
+                  updateInterval(cycleIndex, intervalIndex, { name })
+                }
+                onUpdateTime={(duration) =>
+                  updateInterval(cycleIndex, intervalIndex, { duration })
+                }
+                onUpdateColor={(color) =>
+                  updateInterval(cycleIndex, intervalIndex, { color })
+                }
+              />
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => addInterval(cycleIndex)}
+              className="w-full"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Ajouter un intervalle
+            </Button>
+          </CycleCard>
         ))}
       </div>
 
