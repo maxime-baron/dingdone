@@ -9,6 +9,7 @@ import { Plus } from "lucide-react";
 import { getSessions, saveSession, deleteSession } from "@/lib/storage";
 import { Session } from "@/types/timer";
 import { getExampleSessions } from "@/lib/example-sessions";
+import { generateId } from "@/lib/timer-utils";
 
 export default function Home() {
   const [sessions, setSessions] = useState<Session[]>(getSessions());
@@ -26,9 +27,11 @@ export default function Home() {
   const handleDuplicateSession = (id: string) => {
     const session = sessions.find((s) => s.id === id);
     if (session) {
-      const duplicated = { ...session, id: `${Date.now()}`, name: `${session.name} (copie)` };
+      const id = generateId();
+      const duplicated = { ...session, id, name: `${session.name} (copie)` };
       saveSession(duplicated);
       setSessions(getSessions());
+      router.replace(`#${id}`);
     }
   };
 
