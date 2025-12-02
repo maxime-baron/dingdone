@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 
 export default function TimerPage({
   params,
@@ -47,7 +48,17 @@ export default function TimerPage({
 }
 
 function TimerPageContent({ session }: { session: Session }) {
-  const timer = useTimer(session);
+  const {
+    state: {
+      currentCycleIndex,
+      currentCycleRepetition,
+      currentIntervalIndex,
+      timeRemaining,
+      isRunning,
+      isPaused,
+    },
+    ...timer
+  } = useTimer(session);
 
   const currentInterval = timer.getCurrentInterval();
   const progress = timer.getTotalProgress();
@@ -62,7 +73,14 @@ function TimerPageContent({ session }: { session: Session }) {
                 <ArrowLeft className="h-5 w-5" />
               </Link>
             </Button>
-            <h1 className="text-xl font-bold">{session.name}</h1>
+            <div className="flex-1 flex items-end justify-between">
+              <h1 className="text-xl font-bold">{session.name}</h1>
+              <Badge variant="outline">
+                Cycle {currentCycleIndex + 1}/{session.cycles.length} • Rép{" "}
+                {currentCycleRepetition + 1}/
+                {session.cycles[currentCycleIndex]?.repetitions || 0}
+              </Badge>
+            </div>
           </div>
         </div>
       </header>
@@ -71,24 +89,24 @@ function TimerPageContent({ session }: { session: Session }) {
         <div className="space-y-8">
           <TimerProgress
             session={session}
-            currentCycleIndex={timer.state.currentCycleIndex}
-            currentIntervalIndex={timer.state.currentIntervalIndex}
-            currentCycleRepetition={timer.state.currentCycleRepetition}
+            currentCycleIndex={currentCycleIndex}
+            currentIntervalIndex={currentIntervalIndex}
+            currentCycleRepetition={currentCycleRepetition}
             progress={progress}
           />
 
           <div className="flex justify-center">
             <TimerDisplay
-              timeRemaining={timer.state.timeRemaining}
+              timeRemaining={timeRemaining}
               intervalName={currentInterval?.name || "En attente"}
               color={currentInterval?.color}
-              isRunning={timer.state.isRunning}
+              isRunning={isRunning}
             />
           </div>
 
           <TimerControls
-            isRunning={timer.state.isRunning}
-            isPaused={timer.state.isPaused}
+            isRunning={isRunning}
+            isPaused={isPaused}
             onStart={timer.start}
             onPause={timer.pause}
             onResume={timer.resume}
