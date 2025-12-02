@@ -24,59 +24,46 @@ export function TimerControls({
 }: TimerControlsProps) {
   return (
     <div className="space-y-4">
-      <div className="flex gap-3 justify-center flex-wrap">
-      {!isRunning ? (
-        <Button
-          onClick={onStart}
-          size="lg"
-          className="px-8 py-6 text-lg"
-        >
-          <Play className="mr-2 h-5 w-5" />
-          Démarrer
-        </Button>
-      ) : isPaused ? (
-        <Button
-          onClick={onResume}
-          size="lg"
-          className="px-8 py-6 text-lg bg-green-600 hover:bg-green-700"
-        >
-          <Play className="mr-2 h-5 w-5" />
-          Reprendre
-        </Button>
-      ) : (
-        <Button
-          onClick={onPause}
-          size="lg"
-          variant="secondary"
-          className="px-8 py-6 text-lg"
-        >
-          <Pause className="mr-2 h-5 w-5" />
-          Pause
-        </Button>
-      )}
-
-      {isRunning && (
-        <>
-          <Button
-            onClick={onSkip}
-            size="lg"
-            variant="outline"
-            className="px-6 py-6"
-          >
-            <SkipForward className="mr-2 h-5 w-5" />
-            Passer
-          </Button>
-          <Button
+      <div className="flex gap-8 justify-center flex-wrap">
+        {isRunning && (
+          <button
             onClick={onReset}
-            size="lg"
-            variant="destructive"
-            className="px-6 py-6"
+            className="h-14 w-14 flex items-center justify-center"
           >
-            <RotateCcw className="mr-2 h-5 w-5" />
-            Réinitialiser
-          </Button>
-        </>
-      )}
+            <RotateCcw className="h-10 w-10" color="red" />
+          </button>
+        )}
+        {!isRunning ? (
+          <button
+            onClick={onStart}
+            className="h-14 w-14 flex items-center justify-center"
+          >
+            <Play className="h-10 w-10" />
+          </button>
+        ) : isPaused ? (
+          <button
+            onClick={onResume}
+            className="h-14 w-14 flex items-center justify-center"
+          >
+            <Play className="h-10 w-10" color="green" />
+          </button>
+        ) : (
+          <button
+            onClick={onPause}
+            className="h-14 w-14 flex items-center justify-center"
+          >
+            <Pause className="h-10 w-10" />
+          </button>
+        )}
+
+        {isRunning && (
+          <button
+            onClick={onSkip}
+            className="h-14 w-14 flex items-center justify-center"
+          >
+            <SkipForward className="h-10 w-10" />
+          </button>
+        )}
       </div>
     </div>
   );
