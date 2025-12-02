@@ -89,13 +89,25 @@ function TimerPageContent({ session }: { session: Session }) {
 
       <main className="container mx-auto px-4 py-4 max-w-3xl">
         <div className="space-y-8">
-          <TimerProgress
-            session={session}
-            currentCycleIndex={currentCycleIndex}
-            currentIntervalIndex={currentIntervalIndex}
-            currentCycleRepetition={currentCycleRepetition}
-            progress={progress}
-          />
+          <div className="w-full flex justify-center">
+            {session.cycles[currentCycleIndex]?.intervals.map(
+              (interval, idx) => (
+                <Badge
+                  key={interval.id}
+                  variant={idx === currentIntervalIndex ? "default" : "outline"}
+                  style={{
+                    backgroundColor:
+                      idx === currentIntervalIndex
+                        ? interval.color || "#6b7280"
+                        : undefined,
+                    borderColor: interval.color || "#6b7280",
+                  }}
+                >
+                  {interval.name}
+                </Badge>
+              )
+            )}
+          </div>
 
           <div className="flex justify-center">
             <TimerDisplay
