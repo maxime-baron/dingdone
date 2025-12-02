@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 
 export default function TimerPage({
   params,
@@ -65,7 +66,7 @@ function TimerPageContent({ session }: { session: Session }) {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b">
+      <header>
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" asChild>
@@ -83,6 +84,7 @@ function TimerPageContent({ session }: { session: Session }) {
             </div>
           </div>
         </div>
+        <Progress value={progress} className="h-0.5" />
       </header>
 
       <main className="container mx-auto px-4 py-4 max-w-3xl">
