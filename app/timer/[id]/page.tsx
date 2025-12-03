@@ -6,7 +6,6 @@ import { useSessions } from "@/hooks/use-sessions";
 import { useTimer } from "@/hooks/use-timer";
 import { TimerDisplay } from "@/components/timer-display";
 import { TimerControls } from "@/components/timer-controls";
-import { TimerProgress } from "@/components/timer-progress";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
@@ -89,12 +88,13 @@ function TimerPageContent({ session }: { session: Session }) {
 
       <main className="container mx-auto px-4 py-4 max-w-3xl">
         <div className="space-y-8">
-          <div className="w-full flex justify-center">
+          <div className="w-full flex justify-center gap-2">
             {session.cycles[currentCycleIndex]?.intervals.map(
               (interval, idx) => (
                 <Badge
                   key={interval.id}
                   variant={idx === currentIntervalIndex ? "default" : "outline"}
+                  className="text-md"
                   style={{
                     backgroundColor:
                       idx === currentIntervalIndex
