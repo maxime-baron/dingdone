@@ -6,11 +6,12 @@ import { useSessions } from "@/hooks/use-sessions";
 import { useTimer } from "@/hooks/use-timer";
 import { TimerDisplay } from "@/components/timer-display";
 import { TimerControls } from "@/components/timer-controls";
-import { TimerProgress } from "@/components/timer-progress";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 
 export default function TimerPage({
   params,
@@ -47,14 +48,24 @@ export default function TimerPage({
 }
 
 function TimerPageContent({ session }: { session: Session }) {
-  const timer = useTimer(session);
+  const {
+    state: {
+      currentCycleIndex,
+      currentCycleRepetition,
+      currentIntervalIndex,
+      timeRemaining,
+      isRunning,
+      isPaused,
+    },
+    ...timer
+  } = useTimer(session);
 
   const currentInterval = timer.getCurrentInterval();
   const progress = timer.getTotalProgress();
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b">
+      <header>
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" asChild>
@@ -62,33 +73,54 @@ function TimerPageContent({ session }: { session: Session }) {
                 <ArrowLeft className="h-5 w-5" />
               </Link>
             </Button>
-            <h1 className="text-xl font-bold">{session.name}</h1>
+            <div className="flex-1 flex items-end justify-between">
+              <h1 className="text-xl font-bold">{session.name}</h1>
+              <Badge variant="outline">
+                Cycle {currentCycleIndex + 1}/{session.cycles.length} • Rép{" "}
+                {currentCycleRepetition + 1}/
+                {session.cycles[currentCycleIndex]?.repetitions || 0}
+              </Badge>
+            </div>
           </div>
         </div>
+        <Progress value={progress} className="h-0.5" />
       </header>
 
       <main className="container mx-auto px-4 py-4 max-w-3xl">
         <div className="space-y-8">
-          <TimerProgress
-            session={session}
-            currentCycleIndex={timer.state.currentCycleIndex}
-            currentIntervalIndex={timer.state.currentIntervalIndex}
-            currentCycleRepetition={timer.state.currentCycleRepetition}
-            progress={progress}
-          />
+          <div className="w-full flex justify-center gap-2">
+            {session.cycles[currentCycleIndex]?.intervals.map(
+              (interval, idx) => (
+                <Badge
+                  key={interval.id}
+                  variant={idx === currentIntervalIndex ? "default" : "outline"}
+                  className="text-md"
+                  style={{
+                    backgroundColor:
+                      idx === currentIntervalIndex
+                        ? interval.color || "#6b7280"
+                        : undefined,
+                    borderColor: interval.color || "#6b7280",
+                  }}
+                >
+                  {interval.name}
+                </Badge>
+              )
+            )}
+          </div>
 
           <div className="flex justify-center">
             <TimerDisplay
-              timeRemaining={timer.state.timeRemaining}
+              timeRemaining={timeRemaining}
               intervalName={currentInterval?.name || "En attente"}
               color={currentInterval?.color}
-              isRunning={timer.state.isRunning}
+              isRunning={isRunning}
             />
           </div>
 
           <TimerControls
-            isRunning={timer.state.isRunning}
-            isPaused={timer.state.isPaused}
+            isRunning={isRunning}
+            isPaused={isPaused}
             onStart={timer.start}
             onPause={timer.pause}
             onResume={timer.resume}
