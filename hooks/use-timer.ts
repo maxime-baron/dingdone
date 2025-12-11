@@ -98,7 +98,11 @@ export function useTimer(session: Session) {
   // Visibility change handler: reschedule notifications when app visibility changes
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible" && state.isRunning && !state.isPaused) {
+      if (
+        document.visibilityState === "visible" &&
+        state.isRunning &&
+        !state.isPaused
+      ) {
         // App became visible: cancel all pending notifications
         cancelAllNotifications();
 
@@ -125,7 +129,11 @@ export function useTimer(session: Session) {
             intervalStartedAt: null,
           });
         }
-      } else if (document.visibilityState === "hidden" && state.isRunning && !state.isPaused) {
+      } else if (
+        document.visibilityState === "hidden" &&
+        state.isRunning &&
+        !state.isPaused
+      ) {
         // App became hidden: schedule notifications for upcoming transitions
         const transitions = getUpcomingTransitions(session, state);
         transitions.forEach((transition) => {
@@ -163,31 +171,56 @@ export function useTimer(session: Session) {
     return cycle.intervals[state.currentIntervalIndex] || null;
   }, [getCurrentCycle, state.currentIntervalIndex]);
 
+  const getCyclesProgress = useCallback((): { progress: number }[] => {
+    return session.cycles.map((cycle, idx) => {
+      let progress = 0;
+
+      if (idx < state.currentCycleIndex) {
+        progress = 100;
+      }
+
+      if (idx === state.currentCycleIndex) {
+        const currentCycle = getCurrentCycle();
+        let timeElapsed = cycle.duration * state.currentCycleRepetition;
+
+        if (currentCycle) {
+          // Completed intervals in current repetition
+          for (let i = 0; i < state.currentIntervalIndex; i++) {
+            timeElapsed += currentCycle.intervals[i].duration;
+          }
+
+          const currentInterval = getCurrentInterval();
+          if (currentInterval) {
+            timeElapsed += currentInterval.duration - state.timeRemaining;
+          }
+        }
+
+        progress = (timeElapsed / (cycle.duration * cycle.repetitions)) * 100;
+      }
+
+      return { progress };
+    });
+  }, [session, state, getCurrentInterval, getCurrentCycle]);
+
   const getTotalProgress = useCallback((): number => {
     let totalElapsed = 0;
 
     // Cycles completely finished
     for (let i = 0; i < state.currentCycleIndex; i++) {
       const cycle = session.cycles[i];
-      const cycleDuration = cycle.intervals.reduce(
-        (sum, int) => sum + int.duration,
-        0
-      );
+      const cycleDuration = cycle.duration;
       totalElapsed += cycleDuration * cycle.repetitions;
     }
 
     // Current cycle
     const currentCycle = getCurrentCycle();
     if (currentCycle) {
-      const cycleDuration = currentCycle.intervals.reduce(
-        (sum, int) => sum + int.duration,
-        0
-      );
+      const cycleDuration = currentCycle.duration;
       totalElapsed += cycleDuration * state.currentCycleRepetition;
 
       // Completed intervals in current repetition
       for (let i = 0; i < state.currentIntervalIndex; i++) {
-        totalElapsed += currentCycle.intervals[i].duration;
+        totalElapsed += currentCycle.duration;
       }
 
       // Current interval
@@ -303,7 +336,10 @@ export function useTimer(session: Session) {
       if (prev.isRunning) return prev;
 
       const now = Date.now();
-      const currentInterval = session.cycles[prev.currentCycleIndex].intervals[prev.currentIntervalIndex];
+      const currentInterval =
+        session.cycles[prev.currentCycleIndex].intervals[
+          prev.currentIntervalIndex
+        ];
 
       const newState = {
         ...prev,
@@ -461,7 +497,6 @@ export function useTimer(session: Session) {
     }, 200);
   }, [moveToNextInterval, session]);
 
-
   // Timer tick effect (runs every 100ms for smooth UI updates)
   useEffect(() => {
     if (state.isRunning && !state.isPaused) {
@@ -589,6 +624,7 @@ export function useTimer(session: Session) {
     state,
     getCurrentCycle,
     getCurrentInterval,
+    getCyclesProgress,
     getTotalProgress,
     start,
     pause,

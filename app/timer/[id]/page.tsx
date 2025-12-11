@@ -61,7 +61,7 @@ function TimerPageContent({ session }: { session: Session }) {
   } = useTimer(session);
 
   const currentInterval = timer.getCurrentInterval();
-  const progress = timer.getTotalProgress();
+  const CyclesProgress = timer.getCyclesProgress();
 
   return (
     <div className="min-h-screen bg-background">
@@ -83,7 +83,22 @@ function TimerPageContent({ session }: { session: Session }) {
             </div>
           </div>
         </div>
-        <Progress value={progress} className="h-0.5" />
+        <div className="flex w-full gap-1">
+          {session.cycles.map((cycle, idx) => (
+            <Progress
+              key={`${cycle.id}-progress-bar`}
+              value={CyclesProgress[idx].progress}
+              className={`h-0.5`}
+              style={{
+                width: `${
+                  ((cycle.duration * cycle.repetitions) /
+                    session.totalDuration) *
+                  100
+                }%`,
+              }}
+            />
+          ))}
+        </div>
       </header>
 
       <main className="container mx-auto px-4 py-4 max-w-3xl">
