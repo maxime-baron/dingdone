@@ -88,9 +88,14 @@ function TimerPageContent({ session }: { session: Session }) {
             <Progress
               key={`${cycle.id}-progress-bar`}
               value={CyclesProgress[idx].progress}
-              className={`h-0.5 w-[${
-                (cycle.duration * cycle.repetitions) / session.totalDuration
-              } px]`}
+              className={`h-0.5`}
+              style={{
+                width: `${
+                  ((cycle.duration * cycle.repetitions) /
+                    session.totalDuration) *
+                  100
+                }%`,
+              }}
             />
           ))}
         </div>

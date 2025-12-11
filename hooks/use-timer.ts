@@ -180,28 +180,27 @@ export function useTimer(session: Session) {
       }
 
       if (idx === state.currentCycleIndex) {
-        const currentInterval = getCurrentInterval();
-        const timeElapsed = cycle.intervals.reduce((sum, int, intervalIdx) => {
-          if (intervalIdx < state.currentIntervalIndex) {
-            return sum + int.duration * cycle.repetitions;
+        const currentCycle = getCurrentCycle();
+        let timeElapsed = cycle.duration * state.currentCycleRepetition;
+
+        if (currentCycle) {
+          // Completed intervals in current repetition
+          for (let i = 0; i < state.currentIntervalIndex; i++) {
+            timeElapsed += currentCycle.intervals[i].duration;
           }
 
+          const currentInterval = getCurrentInterval();
           if (currentInterval) {
-            return sum + (currentInterval.duration - state.timeRemaining);
+            timeElapsed += currentInterval.duration - state.timeRemaining;
           }
+        }
 
-          return sum;
-        }, 0);
-
-        progress =
-          (cycle.duration * state.currentCycleRepetition +
-            timeElapsed / (cycle.duration * cycle.repetitions)) *
-          100;
+        progress = (timeElapsed / (cycle.duration * cycle.repetitions)) * 100;
       }
 
       return { progress };
     });
-  }, [session, state, getCurrentInterval]);
+  }, [session, state, getCurrentInterval, getCurrentCycle]);
 
   const getTotalProgress = useCallback((): number => {
     let totalElapsed = 0;
