@@ -120,3 +120,16 @@
     @apply bg-background text-foreground;
   }
 }
+
+@property --p {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 100%;
+}
+
+.chrono-circle {
+  --chrono-color: #6b7280;
+
+  background: conic-gradient(var(--chrono-color) var(--p), #eee 0);
+  transition: --p 1s linear;
+}

@@ -127,6 +127,7 @@ function TimerPageContent({ session }: { session: Session }) {
           <div className="flex justify-center">
             <TimerDisplay
               timeRemaining={timeRemaining}
+              duration={currentInterval?.duration || 0}
               intervalName={currentInterval?.name || "En attente"}
               color={currentInterval?.color}
               isRunning={isRunning}
